@@ -6,29 +6,37 @@ import fs from "fs";
 const list = arg => arg.split(",");
 
 program
-  .version("0.1.2")
-  .option("-s, --src <src>", "Entry point files", list)
-  .option("-i, --include <include>", "Files to check (glob pattern(s))", list)
+  .version("0.2.0")
+  .option("-c, --config <config>", "Config file", entry =>
+    JSON.parse(fs.readFileSync(entry, "utf-8"))
+  )
+  .option("-s, --entry <entry>", "Entry point files", list)
   .option("-e, --exclude <exclude>", "Files to ignore (glob pattern(s))", list)
+  .option("-i, --src <src>", "Files to check (glob pattern(s))", list)
   .parse(process.argv);
 
-const { include, exclude } = program;
-let { src: entry } = program;
+const { src, exclude, config } = program;
+let { entry } = program;
+let cwdPackage;
+
+try {
+  cwdPackage = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+} catch {}
 
 if (!entry) {
-  try {
-    entry = `./${JSON.parse(fs.readFileSync("./package.json", "utf8")).main}`;
-  } catch {}
-
-  if (!entry) {
+  if (cwdPackage && cwdPackage.main) {
+    entry = `./${cwdPackage.main}`;
+  } else {
     console.error("No entrypoint found");
     process.exit(1);
   }
 }
 
 getDeadFiles({
+  ...((cwdPackage && cwdPackage.deadcode) || {}),
+  ...(config || {}),
   entry,
-  include,
+  include: src,
   exclude
 })
   .then(
