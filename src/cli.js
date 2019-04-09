@@ -6,7 +6,7 @@ import fs from "fs";
 const list = arg => arg.split(",");
 
 program
-  .version("0.1.0")
+  .version("0.1.1")
   .option("-s, --src <src>", "Entry point files", list)
   .option("-i, --include <include>", "Files to check (glob pattern(s))", list)
   .option("-e, --exclude <exclude>", "Files to ignore (glob pattern(s))", list)
@@ -22,7 +22,7 @@ if (!entry) {
 
   if (!entry) {
     console.error("No entrypoint found");
-    exit(1);
+    process.exit(1);
   }
 }
 
@@ -71,7 +71,7 @@ getDeadFiles({
         console.log("\nno dead files found");
       }
 
-      exit(deadFiles.length ? 1 : 0);
+      process.exit(deadFiles.length ? 1 : 0);
     }
   )
   .catch(console.log);

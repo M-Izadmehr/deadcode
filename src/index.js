@@ -1,4 +1,5 @@
-import { parseAsync } from "@babel/core";
+import { parseAsync, DEFAULT_EXTENSIONS } from "@babel/core";
+import * as babel from "@babel/core";
 import fs from "fs";
 import path from "path";
 import glob from "glob";
@@ -21,7 +22,7 @@ const globAsync = promisify(glob);
 
 const getDeadFiles = async ({
   entry = [],
-  include = [`${process.cwd()}/**`],
+  include = DEFAULT_EXTENSIONS.map(ext => `${process.cwd()}/**${ext}`),
   ignore = ["**/node_modules/**"]
 }) => {
   const {
