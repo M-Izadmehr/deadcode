@@ -6,7 +6,7 @@ import fs from "fs";
 const list = arg => arg.split(",");
 
 program
-  .version("0.1.1")
+  .version("0.1.2")
   .option("-s, --src <src>", "Entry point files", list)
   .option("-i, --include <include>", "Files to check (glob pattern(s))", list)
   .option("-e, --exclude <exclude>", "Files to ignore (glob pattern(s))", list)

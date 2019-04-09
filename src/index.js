@@ -22,7 +22,7 @@ const globAsync = promisify(glob);
 
 const getDeadFiles = async ({
   entry = [],
-  include = DEFAULT_EXTENSIONS.map(ext => `${process.cwd()}/**${ext}`),
+  include = DEFAULT_EXTENSIONS.map(ext => `${process.cwd()}/**/*${ext}`),
   ignore = ["**/node_modules/**"]
 }) => {
   const {
