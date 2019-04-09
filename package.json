@@ -6,7 +6,7 @@
   "scripts": {
     "build": "babel src -d lib",
     "watch": "babel src -d lib --watch",
-    "prepublish": "yarn build",
+    "prepare": "yarn build",
     "demo": "node lib/cli.js --src ./demo/index --include 'demo/**'",
     "deadcode": "node lib/cli.js --src './src/cli,./src/index' --include 'src/**'"
   },
