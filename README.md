@@ -26,9 +26,24 @@ $ npm add deadcode --save-dev
 
 ## Usage
 
-```
-$ deadcode [options]
-```
+<pre>
+$ deadcode --list-all
+<span style="color:blue">info</span> 5 dependencies found
+├─ /Users/dead-code/demo/index.js
+├─ /Users/dead-code/demo/a.js
+├─ fs
+├─ /Users/dead-code/demo/b.js
+└─ /Users/dead-code/demo/c.js
+<span style="color:yellow">warning</span> 1 files with dynamic dependencies found
+└─ /Users/dead-code/demo/a.js
+<span style="color:yellow">warning</span> 1 ignored dependencies found
+└─ /Users/dead-code/node_modules/@babel/core/lib/index.js
+<span style="color:green">success</span> 0 unparsed dependencies found
+<span style="color:green">success</span> 0 unresolved dependencies
+
+<span style="color:yellow">warning</span> <strong>1 dead files found</strong>
+└─ /Users/dead-code/demo/d.js
+</pre>
 
 You can get help with:
 

@@ -8,13 +8,19 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.3.2")
+  .version("0.3.3")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
   .option("-e, --entry <entry>", "Entry point files", list)
   .option("-i, --ignore <ignore>", "Files to ignore (glob pattern(s))", list)
   .option("-s, --src <src>", "Files to check (glob pattern(s))", list)
+  .option("--list-all", "Display all dependencies lists")
+  .option("--list-dynamic", "Display dynamic dependencies list")
+  .option("--list-found", "Display found dependencies lists")
+  .option("--list-ignored", "Display ignored dependencies list")
+  .option("--list-unparsed", "Display unparsed dependencies list")
+  .option("--list-unresolved", "Display unresolved dependencies list")
   .parse(process.argv);
 
 const fileConfig = program.config || {};
@@ -87,37 +93,60 @@ getDeadFiles({
       didTraverseFiles();
       logInfo(`${dependencies.length} dependencies found`);
 
+      if (program.listAll || program.listFound) {
+        dependencies.map(logDependencyItem);
+      }
+
       if (dynamicDependencies.length) {
         logWarning(
-          `${dynamicDependencies.length} dynamic dependencies found in:`
+          `${dynamicDependencies.length} files with dynamic dependencies found`
         );
-        dynamicDependencies.map(logDependencyItem);
+
+        if (program.listAll || program.listDynamic) {
+          dynamicDependencies.map(logDependencyItem);
+        }
       } else {
         logSuccess("0 dynamic dependencies found");
       }
 
       if (ignoredDependencies.length) {
-        logWarning(`${ignoredDependencies.length} ignored dependencies found:`);
-        ignoredDependencies.map(logDependencyItem);
+        logWarning(`${ignoredDependencies.length} ignored dependencies found`);
+
+        if (program.listAll || program.listIgnored) {
+          ignoredDependencies.map(logDependencyItem);
+        }
+      } else {
+        logSuccess("0 ignored dependencies");
       }
 
       if (unparsedDependencies.length) {
         logWarning(
-          `${unparsedDependencies.length} unparsed dependencies found:`
+          `${unparsedDependencies.length} unparsed dependencies found`
         );
-        unparsedDependencies.map(logDependencyItem);
+
+        if (program.listAll || program.listUnparsed) {
+          unparsedDependencies.map(logDependencyItem);
+        }
+      } else {
+        logSuccess("0 unparsed dependencies found");
       }
 
       if (unresolvedDependencies.length) {
-        logWarning(`${unresolvedDependencies.length} unresolved dependencies:`);
-        unresolvedDependencies.map(logDependencyItem);
+        logWarning(`${unresolvedDependencies.length} unresolved dependencies`);
+
+        if (program.listAll || program.listUnresolved) {
+          unresolvedDependencies.map(logDependencyItem);
+        }
+      } else {
+        logSuccess("0 unresolved dependencies");
       }
 
+      console.log("");
       if (deadFiles.length) {
-        logWarning(deadFiles.length, "dead files found:");
+        logWarning(chalk.bold(`${deadFiles.length} dead files found`));
         deadFiles.map(logDependencyItem);
       } else {
-        logSuccess("0 dead files found");
+        logSuccess(chalk.bold("0 dead files found"));
       }
 
       process.exit(deadFiles.length ? 1 : 0);

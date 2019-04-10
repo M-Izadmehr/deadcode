@@ -1,1 +1,2 @@
 require("./b");
+require("./" + "d");
