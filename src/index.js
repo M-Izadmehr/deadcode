@@ -88,7 +88,7 @@ const getDependencies = async (entry, ignore) => {
             filename = require.resolve(dependency);
           }
         } catch (error) {
-          unresolvedDependencies.push(filename);
+          unresolvedDependencies.push(dependency);
           return;
         }
 
