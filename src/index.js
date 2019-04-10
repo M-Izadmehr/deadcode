@@ -3,6 +3,7 @@ import * as babel from "@babel/core";
 import fs from "fs";
 import path from "path";
 import glob from "glob";
+import minimatch from "minimatch";
 
 import traverse from "./traverse";
 
@@ -30,8 +31,8 @@ const getDeadFiles = async ({
     dynamicDependencies,
     unparsedDependencies,
     unresolvedDependencies
-  } = await getDependencies(entry);
-  const includedFiles = await getIncludedFiles(include, ignore);
+  } = await getDependencies([].concat(entry), [].concat(ignore));
+  const includedFiles = await getIncludedFiles([].concat(include));
   const deadFiles = includedFiles.filter(
     file => dependencies.indexOf(file) === -1
   );
@@ -45,7 +46,7 @@ const getDeadFiles = async ({
   };
 };
 
-const getDependencies = async entry => {
+const getDependencies = async (entry, ignore) => {
   const traverseStack = await Promise.all(
     []
       .concat(entry)
@@ -88,6 +89,10 @@ const getDependencies = async entry => {
           }
         } catch (error) {
           unresolvedDependencies.push(filename);
+          return;
+        }
+
+        if (ignore.find(pattern => minimatch(filename, pattern))) {
           return;
         }
 

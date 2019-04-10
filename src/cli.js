@@ -7,7 +7,7 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.2")
+  .version("0.2.3")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
