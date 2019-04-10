@@ -2,13 +2,14 @@
 import program from "commander";
 import getDeadFiles from "./index";
 import fs from "fs";
+import path from "path";
 
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.0")
+  .version("0.2.1")
   .option("-c, --config <config>", "Config file", entry =>
-    JSON.parse(fs.readFileSync(entry, "utf-8"))
+    JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
   .option("-s, --entry <entry>", "Entry point files", list)
   .option("-e, --exclude <exclude>", "Files to ignore (glob pattern(s))", list)
@@ -20,7 +21,9 @@ let { entry } = program;
 let cwdPackage;
 
 try {
-  cwdPackage = JSON.parse(fs.readFileSync("./package.json", "utf8"));
+  cwdPackage = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "./package.json"), "utf8")
+  );
 } catch {}
 
 if (!entry) {
