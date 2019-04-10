@@ -44,7 +44,8 @@ const getDeadFiles = async ({
     dependencies,
     dynamicDependencies,
     unparsedDependencies,
-    unresolvedDependencies
+    unresolvedDependencies,
+    ignoredDependencies
   } = await getDependencies({ entry, ignore, onTraverseFile });
   const includedFiles = await getIncludedFiles({ include, ignore });
   const deadFiles = includedFiles.filter(
@@ -56,7 +57,8 @@ const getDeadFiles = async ({
     dependencies,
     dynamicDependencies,
     unparsedDependencies,
-    unresolvedDependencies
+    unresolvedDependencies,
+    ignoredDependencies
   };
 };
 
@@ -70,17 +72,25 @@ const getDependencies = async ({ entry, ignore, onTraverseFile }) => {
   const dynamicDependencies = [];
   const unparsedDependencies = [];
   const unresolvedDependencies = [];
+  const ignoredDependencies = [];
 
   const traverseNext = async () => {
     if (!traverseStack.length) {
       return;
     }
 
-    const filename = traverseStack[0];
+    const filename = traverseStack.shift();
+
+    if (ignore.find(pattern => minimatch(filename, pattern))) {
+      ignoredDependencies.push(filename);
+      return traverseNext();
+    }
+
     const dirname = path.dirname(filename);
     const src = await readFileAsync(filename, "UTF-8").catch(() => {});
     let res;
 
+    dependencies.push(filename);
     onTraverseFile(filename);
 
     try {
@@ -88,41 +98,33 @@ const getDependencies = async ({ entry, ignore, onTraverseFile }) => {
       res = traverse(ast);
     } catch {
       unparsedDependencies.push(filename);
+      return traverseNext();
     }
 
-    traverseStack.shift();
-    dependencies.push(filename);
+    res.dependencies.forEach(dependency => {
+      let filename;
 
-    if (res) {
-      res.dependencies.forEach(dependency => {
-        let filename;
-
-        try {
-          if (dependency.match(/^[.\/]/)) {
-            filename = require.resolve(path.join(dirname, dependency));
-          } else {
-            filename = require.resolve(dependency);
-          }
-        } catch (error) {
-          unresolvedDependencies.push(dependency);
-          return;
+      try {
+        if (dependency.match(/^[.\/]/)) {
+          filename = require.resolve(path.join(dirname, dependency));
+        } else {
+          filename = require.resolve(dependency);
         }
-
-        if (ignore.find(pattern => minimatch(filename, pattern))) {
-          return;
-        }
-
-        if (
-          traverseStack.indexOf(filename) === -1 &&
-          dependencies.indexOf(filename) === -1
-        ) {
-          traverseStack.push(filename);
-        }
-      });
-
-      if (res.dynamicDependencies.length) {
-        dynamicDependencies.push(filename);
+      } catch (error) {
+        unresolvedDependencies.push(dependency);
+        return;
       }
+
+      if (
+        traverseStack.indexOf(filename) === -1 &&
+        dependencies.indexOf(filename) === -1
+      ) {
+        traverseStack.push(filename);
+      }
+    });
+
+    if (res.dynamicDependencies.length) {
+      dynamicDependencies.push(filename);
     }
 
     await traverseNext();
@@ -134,7 +136,8 @@ const getDependencies = async ({ entry, ignore, onTraverseFile }) => {
     dependencies,
     dynamicDependencies,
     unparsedDependencies,
-    unresolvedDependencies
+    unresolvedDependencies,
+    ignoredDependencies
   };
 };
 

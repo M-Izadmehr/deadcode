@@ -7,7 +7,7 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.4")
+  .version("0.2.5")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
@@ -63,7 +63,8 @@ getDeadFiles({
       dependencies,
       dynamicDependencies,
       unparsedDependencies,
-      unresolvedDependencies
+      unresolvedDependencies,
+      ignoredDependencies
     }) => {
       didTraverseFile();
       console.log(`${dependencies.length} dependencies found`);
@@ -75,6 +76,13 @@ getDeadFiles({
         dynamicDependencies.map(filename => console.log(`  ${filename}`));
       } else {
         console.log("\nno dynamic dependencies found");
+      }
+
+      if (ignoredDependencies.length) {
+        console.warn(
+          `\n${ignoredDependencies.length} ignored dependencies found:`
+        );
+        ignoredDependencies.map(filename => console.log(`  ${filename}`));
       }
 
       if (unparsedDependencies.length) {
