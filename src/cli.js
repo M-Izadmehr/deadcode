@@ -7,7 +7,7 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.1")
+  .version("0.2.2")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
@@ -16,32 +16,32 @@ program
   .option("-i, --src <src>", "Files to check (glob pattern(s))", list)
   .parse(process.argv);
 
-const { src, exclude, config } = program;
-let { entry } = program;
-let cwdPackage;
+const fileConfig = program.config || {};
+let packageConfig;
 
 try {
-  cwdPackage = JSON.parse(
-    fs.readFileSync(path.resolve(process.cwd(), "./package.json"), "utf8")
-  );
+  packageConfig =
+    JSON.parse(
+      fs.readFileSync(path.resolve(process.cwd(), "./package.json"), "utf8")
+    ).deadcode || {};
 } catch {}
 
-if (!entry) {
+const config = {
+  include: program.src || fileConfig.src || packageConfig.src,
+  entry: program.entry || fileConfig.entry || packageConfig.entry,
+  exclude: program.exclude || fileConfig.exclude || packageConfig.exclude
+};
+
+if (!config.entry) {
   if (cwdPackage && cwdPackage.main) {
-    entry = `./${cwdPackage.main}`;
+    config.entry = `./${cwdPackage.main}`;
   } else {
     console.error("No entrypoint found");
     process.exit(1);
   }
 }
 
-getDeadFiles({
-  ...((cwdPackage && cwdPackage.deadcode) || {}),
-  ...(config || {}),
-  entry,
-  include: src,
-  exclude
-})
+getDeadFiles(config)
   .then(
     ({
       deadFiles,
