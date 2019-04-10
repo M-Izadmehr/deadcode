@@ -111,7 +111,9 @@ const getDependencies = async ({ entry, ignore, onTraverseFile }) => {
           filename = require.resolve(dependency);
         }
       } catch (error) {
-        unresolvedDependencies.push(dependency);
+        if (unresolvedDependencies.indexOf(dependency) === -1) {
+          unresolvedDependencies.push(dependency);
+        }
         return;
       }
 

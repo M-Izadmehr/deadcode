@@ -7,7 +7,12 @@
     "code"
   ],
   "version": "0.3.2",
+  "bugs": "https://github.com/cahnory/deadcode/issues",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cahnory/deadcode.git"
+  },
   "license": "MIT",
   "scripts": {
     "build": "babel src -d lib",
@@ -23,6 +28,7 @@
     "@babel/core": "^7.4.3",
     "@babel/runtime": "^7.4.3",
     "@babel/traverse": "^7.4.3",
+    "chalk": "^2.4.2",
     "commander": "^2.20.0",
     "glob": "^7.1.3",
     "minimatch": "^3.0.4"

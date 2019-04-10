@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import program from "commander";
+import chalk from "chalk";
 import getDeadFiles from "./index";
 import fs from "fs";
 import path from "path";
@@ -42,15 +43,32 @@ if (!config.entry) {
 }
 
 let traversedCursor = 0;
-process.stdout.write(`${++traversedCursor} files traversed`);
 
 const onTraverseFile = filename => {
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
-  process.stdout.write(`${++traversedCursor} files traversed`);
+  process.stdout.write(
+    `${chalk.blue("info")} ${++traversedCursor} files traversed`
+  );
 };
-const didTraverseFile = () => {
-  process.stdout.write("\n");
+const willTraverseFiles = () => {
+  process.stdout.write(`${chalk.blue("info")} 0 files traversed`);
+};
+const didTraverseFiles = () => {
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+};
+const logInfo = title => {
+  console.log(chalk.blue("info"), title);
+};
+const logWarning = title => {
+  console.warn(chalk.yellow("warning"), title);
+};
+const logSuccess = title => {
+  console.log(chalk.green("success"), title);
+};
+const logDependencyItem = (dependency, key, list) => {
+  console.log(list.length - 1 === key ? "└─" : "├─", dependency);
 };
 
 getDeadFiles({
@@ -66,44 +84,40 @@ getDeadFiles({
       unresolvedDependencies,
       ignoredDependencies
     }) => {
-      didTraverseFile();
-      console.log(`${dependencies.length} dependencies found`);
+      didTraverseFiles();
+      logInfo(`${dependencies.length} dependencies found`);
 
       if (dynamicDependencies.length) {
-        console.warn(
-          `\n${dynamicDependencies.length} dynamic dependencies found in:`
+        logWarning(
+          `${dynamicDependencies.length} dynamic dependencies found in:`
         );
-        dynamicDependencies.map(filename => console.log(`  ${filename}`));
+        dynamicDependencies.map(logDependencyItem);
       } else {
-        console.log("\nno dynamic dependencies found");
+        logSuccess("0 dynamic dependencies found");
       }
 
       if (ignoredDependencies.length) {
-        console.warn(
-          `\n${ignoredDependencies.length} ignored dependencies found:`
-        );
-        ignoredDependencies.map(filename => console.log(`  ${filename}`));
+        logWarning(`${ignoredDependencies.length} ignored dependencies found:`);
+        ignoredDependencies.map(logDependencyItem);
       }
 
       if (unparsedDependencies.length) {
-        console.warn(
-          `\n${unparsedDependencies.length} unparsed dependencies found:`
+        logWarning(
+          `${unparsedDependencies.length} unparsed dependencies found:`
         );
-        unparsedDependencies.map(filename => console.log(`  ${filename}`));
+        unparsedDependencies.map(logDependencyItem);
       }
 
       if (unresolvedDependencies.length) {
-        console.warn(
-          `\n${unresolvedDependencies.length} unresolved dependencies:`
-        );
-        unresolvedDependencies.map(filename => console.log(`  ${filename}`));
+        logWarning(`${unresolvedDependencies.length} unresolved dependencies:`);
+        unresolvedDependencies.map(logDependencyItem);
       }
 
       if (deadFiles.length) {
-        console.log(`\n${deadFiles.length} dead files found:`);
-        deadFiles.map(filename => console.log(`  ${filename}`));
+        logWarning(deadFiles.length, "dead files found:");
+        deadFiles.map(logDependencyItem);
       } else {
-        console.log("\nno dead files found");
+        logSuccess("0 dead files found");
       }
 
       process.exit(deadFiles.length ? 1 : 0);
