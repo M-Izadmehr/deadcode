@@ -7,13 +7,13 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.5")
+  .version("0.3.0")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
-  .option("-s, --entry <entry>", "Entry point files", list)
-  .option("-e, --exclude <exclude>", "Files to ignore (glob pattern(s))", list)
-  .option("-i, --src <src>", "Files to check (glob pattern(s))", list)
+  .option("-e, --entry <entry>", "Entry point files", list)
+  .option("-i, --ignore <ignore>", "Files to ignore (glob pattern(s))", list)
+  .option("-s, --src <src>", "Files to check (glob pattern(s))", list)
   .parse(process.argv);
 
 const fileConfig = program.config || {};
@@ -29,7 +29,7 @@ try {
 const config = {
   include: program.src || fileConfig.src || packageConfig.src,
   entry: program.entry || fileConfig.entry || packageConfig.entry,
-  exclude: program.exclude || fileConfig.exclude || packageConfig.exclude
+  ignore: program.ignore || fileConfig.ignore || packageConfig.ignore
 };
 
 if (!config.entry) {
