@@ -1,6 +1,12 @@
 {
   "name": "deadcode",
-  "version": "0.3.1",
+  "description": "Deadcode shows you source files that are not required",
+  "keywords": [
+    "deadcode",
+    "dead",
+    "code"
+  ],
+  "version": "0.3.2",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {

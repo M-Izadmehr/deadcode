@@ -1,6 +1,6 @@
 # deadcode
 
-> Deadcode shows you source files that are not required anywhere given entry point scripts.
+Deadcode shows you source files that are not required anywhere given entry point scripts.
 
 ## Summary
 
@@ -12,7 +12,7 @@ Deadcode list all files not required anywhere in your project and let you remove
 
 #### Dynamic requires
 
-Deadcode will ignore dynamic requires but will provide you with a list of files that contain them
+Deadcode will ignore dynamic requires but will provide you with a list of files that contain them.
 
 #### Reassigned requires
 
@@ -57,7 +57,11 @@ Options could be:
   ```
 - read from the `deadcode` property of your package.json:
   ```
-  $ deadcode --config=".deadcoderc"
+  {
+    "deadcode": {
+      "ignore": ["**/node_modules/**"]
+    }
+  }
   ```
 
 ### Good to know
