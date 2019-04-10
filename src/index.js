@@ -20,19 +20,33 @@ const promisify = func => (...args) =>
 
 const readFileAsync = promisify(fs.readFile);
 const globAsync = promisify(glob);
+const none = () => {};
 
 const getDeadFiles = async ({
   entry = [],
   include = DEFAULT_EXTENSIONS.map(ext => `${process.cwd()}/**/*${ext}`),
-  ignore = ["**/node_modules/**"]
+  ignore = ["**/node_modules/**"],
+  onTraverseFile = none
 }) => {
+  if (!Array.isArray(entry)) {
+    entry = [entry];
+  }
+
+  if (!Array.isArray(include)) {
+    include = [include];
+  }
+
+  if (!Array.isArray(ignore)) {
+    ignore = [ignore];
+  }
+
   const {
     dependencies,
     dynamicDependencies,
     unparsedDependencies,
     unresolvedDependencies
-  } = await getDependencies([].concat(entry), [].concat(ignore));
-  const includedFiles = await getIncludedFiles([].concat(include));
+  } = await getDependencies({ entry, ignore, onTraverseFile });
+  const includedFiles = await getIncludedFiles({ include, ignore });
   const deadFiles = includedFiles.filter(
     file => dependencies.indexOf(file) === -1
   );
@@ -46,11 +60,11 @@ const getDeadFiles = async ({
   };
 };
 
-const getDependencies = async (entry, ignore) => {
+const getDependencies = async ({ entry, ignore, onTraverseFile }) => {
   const traverseStack = await Promise.all(
-    []
-      .concat(entry)
-      .map(filename => require.resolve(path.resolve(process.cwd(), filename)))
+    entry.map(filename =>
+      require.resolve(path.resolve(process.cwd(), filename))
+    )
   );
   const dependencies = [];
   const dynamicDependencies = [];
@@ -66,6 +80,8 @@ const getDependencies = async (entry, ignore) => {
     const dirname = path.dirname(filename);
     const src = await readFileAsync(filename, "UTF-8").catch(() => {});
     let res;
+
+    onTraverseFile(filename);
 
     try {
       const ast = await parseAsync(src, { filename });
@@ -122,11 +138,11 @@ const getDependencies = async (entry, ignore) => {
   };
 };
 
-const getIncludedFiles = async (include, ignore) => {
+const getIncludedFiles = async ({ include, ignore }) => {
   const files = [];
 
   await Promise.all(
-    [].concat(include).map(async pattern => {
+    include.map(async pattern => {
       (await globAsync(pattern, {
         ignore,
         realpath: true,

@@ -7,7 +7,7 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.2.3")
+  .version("0.2.4")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
@@ -41,7 +41,22 @@ if (!config.entry) {
   }
 }
 
-getDeadFiles(config)
+let traversedCursor = 0;
+process.stdout.write(`${++traversedCursor} files traversed`);
+
+const onTraverseFile = filename => {
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write(`${++traversedCursor} files traversed`);
+};
+const didTraverseFile = () => {
+  process.stdout.write("\n");
+};
+
+getDeadFiles({
+  onTraverseFile,
+  ...config
+})
   .then(
     ({
       deadFiles,
@@ -50,6 +65,7 @@ getDeadFiles(config)
       unparsedDependencies,
       unresolvedDependencies
     }) => {
+      didTraverseFile();
       console.log(`${dependencies.length} dependencies found`);
 
       if (dynamicDependencies.length) {
