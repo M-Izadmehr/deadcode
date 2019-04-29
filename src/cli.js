@@ -8,7 +8,7 @@ import path from "path";
 const list = arg => arg.split(",");
 
 program
-  .version("0.3.3")
+  .version("0.3.4")
   .option("-c, --config <config>", "Config file", entry =>
     JSON.parse(fs.readFileSync(path.resolve(process.cwd(), entry), "utf-8"))
   )
@@ -23,16 +23,18 @@ program
   .option("--list-unresolved", "Display unresolved dependencies list")
   .parse(process.argv);
 
-const fileConfig = program.config || {};
-let packageConfig;
+let cwdPackage;
 
 try {
-  packageConfig =
-    JSON.parse(
-      fs.readFileSync(path.resolve(process.cwd(), "./package.json"), "utf8")
-    ).deadcode || {};
-} catch {}
+  cwdPackage = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "./package.json"), "utf8")
+  );
+} catch {
+  cwdPackage = {};
+}
 
+const fileConfig = program.config || {};
+const packageConfig = cwdPackage.deadcode || {};
 const config = {
   include: program.src || fileConfig.src || packageConfig.src,
   entry: program.entry || fileConfig.entry || packageConfig.entry,
@@ -40,7 +42,7 @@ const config = {
 };
 
 if (!config.entry) {
-  if (cwdPackage && cwdPackage.main) {
+  if (cwdPackage.main) {
     config.entry = `./${cwdPackage.main}`;
   } else {
     console.error("No entrypoint found");
