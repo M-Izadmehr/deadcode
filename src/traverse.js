@@ -20,6 +20,15 @@ export default ast => {
       } else {
         dependencies.push(path.node.source.value);
       }
+    },
+    ExportNamedDeclaration(path) {
+      if (path.node.source) {
+        if (path.node.source.type !== "StringLiteral") {
+          dynamicDependencies.push(path.node.source.loc);
+        } else {
+          dependencies.push(path.node.source.value);
+        }
+      }
     }
   });
 
