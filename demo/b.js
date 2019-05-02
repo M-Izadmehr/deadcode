@@ -1,1 +1,1 @@
-import "./c";
+export { c } from "./c";
